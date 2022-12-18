@@ -1,11 +1,19 @@
 package com.johnymuffin.beta.discordauth;
 
+import com.google.errorprone.annotations.CheckReturnValue;
 import com.projectposeidon.api.PoseidonUUID;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.Interaction;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.InteractionType;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyAction;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 import java.util.UUID;
 
@@ -24,6 +32,7 @@ public class DiscordAuthListener extends ListenerAdapter {
         String[] ags = event.getMessage().getContentRaw().split(" ");
         if (ags[0].toLowerCase().equals("!link")) {
             if (ags.length != 2) {
+
                 event.getChannel().sendMessage("Incorrect Usage: \"!link username\"").queue();
                 return;
             }
@@ -89,29 +98,59 @@ public class DiscordAuthListener extends ListenerAdapter {
 
         } else if (ags[0].toLowerCase().equals("!status")) {
 
+            if (ags.length == 1) {
+                if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
 
-            if (plugin.getData().isDiscordIDAlreadyLinked(event.getAuthor().getId())) {
+                    String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
+                    String message = "We found the link details below";
+                    message = message + "\nUUID: " + uuid;
+                    String username = null;
+                    if (plugin.isPoseidonPresent()) {
+                        username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                    }
+                    if (username == null) username = "Unknown User";
+                    message = message + "\nCurrent Username: " + username;
+                    String finalMessage = message;
 
-                String uuid = plugin.getData().getUUIDFromDiscordID(event.getAuthor().getId());
-                String message = "We found the link details below";
-                message = message + "\nUUID: " + uuid;
-                String username = null;
-                if (plugin.isPoseidonPresent()) {
-                    username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                    event.getChannel().sendMessage(finalMessage).queue();
+
+
+                } else {
+                    event.getChannel().sendMessage("This Discord account is currently not linked to any account").queue();
                 }
-                if (username == null) username = "Unknown User";
-                message = message + "\nCurrent Username: " + username;
-                String finalMessage = message;
+                return;
+            }
+            if (ags.length > 2) {
+                event.getChannel().sendMessage("Too many arguments! " +
+                        "\nTo grab your link status just type \"!status\" " +
+                        "\nTo grab another players link status, type \"!status {userID}\"").queue();
+                return;
+            }
+                String lookup = ags[1];
+                if (plugin.getData().isDiscordIDAlreadyLinked(lookup)) {
 
-                event.getChannel().sendMessage(finalMessage).queue();
+                    String uuid = plugin.getData().getUUIDFromDiscordID(lookup);
+                    String message = "We found the link details below";
+                    message = message + "\nUUID: " + uuid;
+                    String username = null;
+                    if (plugin.isPoseidonPresent()) {
+                        username = PoseidonUUID.getPlayerUsernameFromUUID(UUID.fromString(uuid));
+                    }
+                    if (username == null) username = "Unknown User";
+                    message = message + "\nCurrent Username: " + username;
+                    String finalMessage = message;
+
+                    event.getChannel().sendMessage(finalMessage).queue();
 
 
-            } else {
-                event.getChannel().sendMessage("This Discord account is currently not linked to any account").queue();
+                } else {
+                    event.getChannel().sendMessage("This Discord account is currently not linked to any account").queue();
+                }
             }
 
+
         }
-    }
+
 
 
     private String generateCode() {
