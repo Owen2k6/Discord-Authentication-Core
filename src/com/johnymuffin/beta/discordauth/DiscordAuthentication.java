@@ -3,14 +3,24 @@ package com.johnymuffin.beta.discordauth;
 import com.johnymuffin.beta.discordauth.commands.DiscordAuthCommand;
 import com.johnymuffin.discordcore.DiscordCore;
 import com.projectposeidon.api.PoseidonUUID;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import static java.lang.System.in;
+import static net.dv8tion.jda.api.interactions.commands.OptionType.STRING;
+import static net.dv8tion.jda.api.interactions.commands.OptionType.USER;
 
 public class DiscordAuthentication extends JavaPlugin {
     private Logger log;
@@ -63,6 +73,27 @@ public class DiscordAuthentication extends JavaPlugin {
         //Update Last Known Username Logic
         final DiscordAuthUUIDJoinListener DAUJL = new DiscordAuthUUIDJoinListener(plugin);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, DAUJL, Event.Priority.Monitor, plugin);
+
+        RestAction<List<Command>> pre = discord.getDiscordBot().jda.retrieveCommands();
+        CommandListUpdateAction commands = pre.getJDA().updateCommands();
+
+        commands.addCommands(
+                new CommandData("link", "Link your Minecraft account to discord")
+                        .addOptions(new OptionData(STRING, "username", "Please enter a username in order to link.")
+                                .setRequired(true))
+        );
+        commands.addCommands(
+                new CommandData("status", "Link your Minecraft account to discord")
+                        .addOptions(new OptionData(USER, "user", "See the link status of another member.")
+                                .setRequired(false))
+        );
+        commands.addCommands(
+                new CommandData("unlink", "Unlink your discord account from any linked minecraft accounts.")
+        );
+
+
+
+        commands.queue();
 
 
     }

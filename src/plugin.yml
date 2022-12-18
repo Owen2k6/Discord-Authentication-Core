@@ -7,3 +7,5 @@ commands:
   discordauth:
     description: Basic DiscordAuth commands
     usage: /<command>
+  refreshslashcmd:
+    usage: /<command>
