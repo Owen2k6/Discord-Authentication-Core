@@ -74,8 +74,7 @@ public class DiscordAuthentication extends JavaPlugin {
         final DiscordAuthUUIDJoinListener DAUJL = new DiscordAuthUUIDJoinListener(plugin);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, DAUJL, Event.Priority.Monitor, plugin);
 
-        RestAction<List<Command>> pre = discord.getDiscordBot().jda.retrieveCommands();
-        CommandListUpdateAction commands = pre.getJDA().updateCommands();
+        CommandListUpdateAction commands = discord.getDiscordBot().jda.updateCommands();
 
         commands.addCommands(
                 new CommandData("link", "Link your Minecraft account to discord")
